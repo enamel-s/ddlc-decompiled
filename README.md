@@ -51,3 +51,20 @@ Ren'Py 6.99.12 version DDLC was built with. The main fixes:
   depend on: layer transforms don't inherit state
   (`config.keep_show_layer_state = False`), and the textbox stays up behind
   choice menus.
+
+## Translating with a spreadsheet
+
+`tools/ddlc_xlsx.py` extracts every string in the scripts to an `.xlsx` sheet
+(columns `Original`, `TL`, `TLC`, `Edit`, `Notes`, one worksheet per script)
+and puts the translations back. It needs `pip install openpyxl`.
+
+```bash
+python3 tools/ddlc_xlsx.py extract game -o script.xlsx
+python3 tools/ddlc_xlsx.py apply script.xlsx --game game
+```
+
+For each row, `apply` uses `Edit`, then `TLC`, then `TL`, whichever is filled
+first. Rows are matched by their English text, so older sheets still line up.
+Labels, file names and other code strings are never replaced. Pass
+`--out folder` to write copies instead of editing `game/`, or `--dry-run` to
+see what would change.
