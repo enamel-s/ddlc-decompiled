@@ -1,29 +1,58 @@
 init python:
     def screenshot_srf():
-        srf = renpy.display.draw.screenshot(None, False)
-        
+        """
+        Returns a pygame surface containing the last frame that was drawn,
+        scaled to the virtual screen size (1280x720).
+
+        Ren'Py 8's renderer only takes the render tree to draw, so the tree
+        of the last frame is passed in, and the result is scaled from the
+        physical window size back down to the virtual size.
+        """
+        srf = renpy.display.draw.screenshot(getattr(renpy.game.interface, "surftree", None))
+        size = (config.screen_width, config.screen_height)
+        if srf.get_size() != size:
+            srf = renpy.display.scale.smoothscale(srf, size)
         return srf
 
-    def invert():
-        srf = screenshot_srf()
-        inv = renpy.Render(srf.get_width(), srf.get_height()).canvas().get_surface()
-        inv.fill((255,255,255,255))
-        inv.blit(srf, (0,0), None, 2) 
-        return inv
+    class ScreenshotDisplayable(renpy.Displayable):
+        """
+        Displays a surface returned by screenshot_srf(). The surface is
+        uploaded to the GPU only once.
+        """
+        def __init__(self, srf=None, **properties):
+            super(ScreenshotDisplayable, self).__init__(**properties)
+            self.srf = srf if srf is not None else screenshot_srf()
+            self.texture = None
+
+        def get_texture(self):
+            if self.texture is None:
+                self.texture = renpy.display.draw.load_texture(self.srf)
+            return self.texture
+
+        def render(self, width, height, st, at):
+            w, h = self.srf.get_size()
+            rv = renpy.Render(w, h)
+            rv.blit(self.get_texture(), (0, 0))
+            return rv
 
     class Invert(renpy.Displayable):
         def __init__(self, delay=0.0, screenshot_delay=0.0):
             super(Invert, self).__init__()
-            self.width, self.height = renpy.get_physical_size()
-            self.height = self.width * 9 / 16
-            self.srf = invert()
+            self.width = config.screen_width
+            self.height = config.screen_height
+            self.child = Transform(ScreenshotDisplayable(), matrixcolor=InvertMatrix(1.0))
             self.delay = delay
-        
+
         def render(self, width, height, st, at):
             render = renpy.Render(self.width, self.height)
             if st >= self.delay:
-                render.blit(self.srf, (0, 0))
+                render.blit(renpy.render(self.child, self.width, self.height, st, at), (0, 0))
+            else:
+                renpy.redraw(self, self.delay - st)
             return render
+
+        def visit(self):
+            return [ self.child ]
 
     def hide_windows_enabled(enabled=True):
         global _windows_hidden
@@ -62,14 +91,12 @@ init python:
     class Tear(renpy.Displayable):
         def __init__(self, number, offtimeMult, ontimeMult, offsetMin, offsetMax, srf=None):
             super(Tear, self).__init__()
-            self.width, self.height = renpy.get_physical_size()
-            if float(self.width) / float(self.height) > 16.0/9.0:
-                self.width = self.height * 16 / 9
-            else:
-                self.height = self.width * 9 / 16
+            self.width = config.screen_width
+            self.height = config.screen_height
             self.number = number
             if not srf: self.srf = screenshot_srf()
             else: self.srf = srf
+            self.texture = None
             self.pieces = []
             tearpoints = [0, self.height]
             for i in range(number):
@@ -77,13 +104,20 @@ init python:
             tearpoints.sort()
             for i in range(number+1):
                 self.pieces.append(TearPiece(tearpoints[i], tearpoints[i+1], offtimeMult, ontimeMult, offsetMin, offsetMax))
-        
+
         def render(self, width, height, st, at):
+            if self.texture is None:
+                self.texture = renpy.display.draw.load_texture(self.srf)
+            sw, sh = self.srf.get_size()
             render = renpy.Render(self.width, self.height)
-            render.blit(self.srf, (0,0))
+            render.blit(self.texture, (0,0))
             for piece in self.pieces:
                 piece.update(st)
-                subsrf = self.srf.subsurface((0, max(0, piece.startY - 1), self.width, max(0, piece.endY - piece.startY)))
+                y = min(max(0, piece.startY - 1), sh)
+                h = min(max(0, piece.endY - piece.startY), sh - y)
+                if h <= 0:
+                    continue
+                subsrf = self.texture.subsurface((0, y, sw, h))
                 render.blit(subsrf, (piece.offset, piece.startY))
             renpy.redraw(self, 0)
             return render
@@ -359,7 +393,7 @@ image bsod_2:
     0.1
     yoffset 750
 
-image bsod = LiveComposite((1280, 720), (0, 0), "bsod_1", (0, 0), "bsod_2")
+image bsod = Composite((1280, 720), (0, 0), "bsod_1", (0, 0), "bsod_2")
 
 image veins:
     AnimatedMask("images/bg/veinmask.png", "images/bg/veinmask.png", "images/bg/veinmaskb.png", 0.15, 16, moving=False, speed=10.0, frequency=0.25, amount=0.1)

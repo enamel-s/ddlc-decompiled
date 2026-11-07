@@ -22,13 +22,9 @@ label ch40_main:
     with dissolve_scene_full
 
     python:
-        if not persistent.monika_back:
-            try:
-                renpy.file("../characters/monika.chr")
-                renpy.call_screen("dialog", message="Please stop playing with my heart.\nI don't want to come back.", ok_action=Return())
-                persistent.monika_back = True
-            except:
-                pass
+        if not persistent.monika_back and character_exists("monika"):
+            renpy.call_screen("dialog", message="Please stop playing with my heart.\nI don't want to come back.", ok_action=Return())
+            persistent.monika_back = True
 
     $ delete_character("monika")
     play music t2

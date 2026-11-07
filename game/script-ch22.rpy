@@ -328,29 +328,13 @@ label ch22_end:
     else:
         play music t3
     if renpy.random.randint(0,2) == 0:
-        $ config.mouse = {"default": [
-                                    ("gui/mouse/s_head2.png", 0, 0),
-                                    ("gui/mouse/s_head2.png", 0, 0),
-                                    ("gui/mouse/s_head2.png", 0, 0),
-                                    ("gui/mouse/s_head2.png", 0, 0),
-                                    ("gui/mouse/s_head.png", 0, 0),
-                                    ("gui/mouse/s_head.png", 0, 0),
-                                    ("gui/mouse/s_head2.png", 0, 0),
-                                    ("gui/mouse/s_head2.png", 0, 0),
-                                    ("gui/mouse/s_head2.png", 0, 0),
-                                    ("gui/mouse/s_head2.png", 0, 0),
-                                    ("gui/mouse/s_head2.png", 0, 0),
-                                    ("gui/mouse/s_head2.png", 0, 0),
-                                    ("gui/mouse/s_head2.png", 0, 0),
-                                    ("gui/mouse/s_head2.png", 0, 0),
-                                    ("gui/mouse/s_head.png", 0, 0),
-                                    ]}
+        $ default_mouse = "sayori_head"
 
 
 
     m "Okay, everyone!"
     m "We're all done reading each other's poems, right?"
-    $ config.mouse = None
+    $ default_mouse = "default"
     m "We have something we need to go over today, so if everyone could come sit at the front of the room..."
     show natsuki 3c zorder 3 at f31
     n "Is this about the festival?"

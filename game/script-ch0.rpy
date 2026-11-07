@@ -4,9 +4,8 @@ label ch0_main:
     with dissolve_scene_full
     play music t2
 
-    python:
-        try: renpy.file("../characters/monika.chr")
-        except: renpy.jump("ch0_kill")
+    if not character_exists("monika"):
+        jump ch0_kill
 
     $ restore_all_characters()
     s "Heeeeeeeyyy!!"

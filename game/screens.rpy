@@ -328,7 +328,7 @@ init -1 python:
         currentpos = renpy.get_mouse_pos()
         targetpos = [640, 345]
         if currentpos[1] < targetpos[1]:
-            renpy.display.draw.set_mouse_pos((currentpos[0] * 9 + targetpos[0]) / 10.0, (currentpos[1] * 9 + targetpos[1]) / 10.0)
+            renpy.set_mouse_pos(int((currentpos[0] * 9 + targetpos[0]) / 10.0), int((currentpos[1] * 9 + targetpos[1]) / 10.0))
 
 init -501 screen rigged_choice(items):
     style_prefix "choice"

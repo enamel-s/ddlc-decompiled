@@ -88,8 +88,8 @@ image monika_body_glitch2:
 
 image room_glitch = "images/cg/monika/monika_bg_glitch.png"
 
-image room_mask = LiveComposite((1280, 720), (0, 0), "mask_test", (0, 0), "mask_test2")
-image room_mask2 = LiveComposite((1280, 720), (0, 0), "mask_test3", (0, 0), "mask_test4")
+image room_mask = Composite((1280, 720), (0, 0), "mask_test", (0, 0), "mask_test2")
+image room_mask2 = Composite((1280, 720), (0, 0), "mask_test3", (0, 0), "mask_test4")
 
 
 
@@ -102,9 +102,7 @@ init python:
 
     def slow_nodismiss(event, interact=True, **kwargs):
         if not persistent.monika_kill:
-            try:
-                renpy.file("../characters/monika.chr")
-            except:
+            if not character_exists("monika"):
                 persistent.tried_skip = True
                 config.allow_skipping = False
                 _window_hide(None)
@@ -857,9 +855,7 @@ label ch30_loop:
     $ waittime = renpy.random.randint(4, 8)
 label ch30_waitloop:
     python:
-        try:
-            renpy.file("../characters/monika.chr")
-        except:
+        if not character_exists("monika"):
             persistent.tried_skip = True
             config.allow_skipping = False
             _window_hide(None)
@@ -874,7 +870,7 @@ label ch30_waitloop:
 
     python:
         if len(persistent.monikatopics) == 0:
-            persistent.monikatopics = range(1,57)
+            persistent.monikatopics = list(range(1,57))
             persistent.monikatopics.remove(14)
             persistent.monikatopics.remove(25)
             persistent.monikatopics.remove(26)

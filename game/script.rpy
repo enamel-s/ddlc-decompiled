@@ -61,8 +61,7 @@ label start:
         call ch4_main
 
         python:
-            try: renpy.file(config.basedir + "/hxppy thxughts.png")
-            except: open(config.basedir + "/hxppy thxughts.png", "wb").write(renpy.file("hxppy thxughts.png").read())
+            copy_to_basedir("hxppy thxughts.png")
         $ chapter = 5
         call ch5_main
 
@@ -86,8 +85,7 @@ label start:
 
             call poem
             python:
-                try: renpy.file(config.basedir + "/CAN YOU HEAR ME.txt")
-                except: open(config.basedir + "/CAN YOU HEAR ME.txt", "wb").write(renpy.file("CAN YOU HEAR ME.txt").read())
+                copy_to_basedir("CAN YOU HEAR ME.txt")
 
 
             $ chapter = 1
@@ -98,8 +96,7 @@ label start:
 
             call poem (False)
             python:
-                try: renpy.file(config.basedir + "/iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii.txt")
-                except: open(config.basedir + "/iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii.txt", "wb").write(renpy.file("iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii.txt").read())
+                copy_to_basedir("iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii.txt")
 
 
             $ chapter = 2

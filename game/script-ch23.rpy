@@ -496,8 +496,12 @@ label ch23_end:
     hide monika
     "Monika giggles as Yuri pushes her out the door."
     python:
-        try: renpy.file(config.basedir + "/have a nice weekend!")
-        except: open(config.basedir + "/have a nice weekend!", "w").write("G2pilVJccjJiQZ1poiM3iYZhj3I0IRbvj3wxomnoeOatVHUxZ2ozGKJgjXMzj2LgoOitBOM1dSDzHMatdRpmQZpidNehG29mkTxwmDJbGJxsjnVeQT9mTPSwSAOwnuWhSE50ByMpcuJoqGstJOCxqHCtdvG3HJV0TOGuwOIyoOGhwOHgm2GhlZpyISJik3J/")
+        if not basedir_file_exists("have a nice weekend!"):
+            try:
+                with open(basedir_path("have a nice weekend!"), "w") as f:
+                    f.write("G2pilVJccjJiQZ1poiM3iYZhj3I0IRbvj3wxomnoeOatVHUxZ2ozGKJgjXMzj2LgoOitBOM1dSDzHMatdRpmQZpidNehG29mkTxwmDJbGJxsjnVeQT9mTPSwSAOwnuWhSE50ByMpcuJoqGstJOCxqHCtdvG3HJV0TOGuwOIyoOGhwOHgm2GhlZpyISJik3J/")
+            except Exception:
+                pass
         try: os.remove(config.basedir + "/hxppy thxughts.png")
         except: pass
         try: os.remove(config.basedir + "/CAN YOU HEAR ME.txt")

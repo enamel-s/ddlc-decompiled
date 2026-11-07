@@ -204,10 +204,16 @@ label splashscreen:
         process_list = []
         currentuser = ""
         if renpy.windows:
+            # wmic has been removed from recent versions of Windows, so
+            # tasklist is used first, with wmic kept as a fallback.
             try:
-                process_list = subprocess.check_output("wmic process get Description", shell=True).lower().replace("\r", "").replace(" ", "").split("\n")
-            except:
-                pass
+                output = subprocess.check_output("tasklist /fo csv /nh", shell=True, creationflags=0x08000000).decode("utf-8", "ignore")
+                process_list = [ line.split('","')[0].strip('"').lower().replace(" ", "") for line in output.replace("\r", "").split("\n") if line ]
+            except Exception:
+                try:
+                    process_list = subprocess.check_output("wmic process get Description", shell=True, creationflags=0x08000000).decode("utf-8", "ignore").lower().replace("\r", "").replace(" ", "").split("\n")
+                except Exception:
+                    pass
             try:
                 for name in ('LOGNAME', 'USER', 'LNAME', 'USERNAME'):
                     user = os.environ.get(name)
@@ -219,10 +225,15 @@ label splashscreen:
 
     python:
         firstrun = ""
+        firstrun_path = os.path.join(config.gamedir, "firstrun")
         try:
-            firstrun = renpy.file("firstrun").read(1)
-        except:
-            with open(config.basedir + "/game/firstrun", "wb") as f:
+            with open(firstrun_path, "r") as f:
+                firstrun = f.read(1)
+        except Exception:
+            try:
+                with open(firstrun_path, "w") as f:
+                    pass
+            except Exception:
                 pass
     if not firstrun:
         if persistent.first_run and (config.version == persistent.oldversion or persistent.autoload == "postcredits_loop"):
@@ -243,7 +254,7 @@ label splashscreen:
         python:
             if not firstrun:
                 try:
-                    with open(config.basedir + "/game/firstrun", "w") as f:
+                    with open(firstrun_path, "w") as f:
                         f.write("1")
                 except:
                     renpy.jump("readonly")
@@ -278,25 +289,21 @@ label splashscreen:
     python:
         s_kill_early = None
         if persistent.playthrough == 0:
-            try: renpy.file("../characters/sayori.chr")
-            except: s_kill_early = True
+            if not character_exists("sayori"):
+                s_kill_early = True
         if not s_kill_early:
             if persistent.playthrough <= 2 and persistent.playthrough != 0:
-                try: renpy.file("../characters/monika.chr")
-                except: open(config.basedir + "/characters/monika.chr", "wb").write(renpy.file("monika.chr").read())
+                restore_character("monika")
             if persistent.playthrough <= 1 or persistent.playthrough == 4:
-                try: renpy.file("../characters/natsuki.chr")
-                except: open(config.basedir + "/characters/natsuki.chr", "wb").write(renpy.file("natsuki.chr").read())
-                try: renpy.file("../characters/yuri.chr")
-                except: open(config.basedir + "/characters/yuri.chr", "wb").write(renpy.file("yuri.chr").read())
+                restore_character("natsuki")
+                restore_character("yuri")
             if persistent.playthrough == 4:
-                try: renpy.file("../characters/sayori.chr")
-                except: open(config.basedir + "/characters/sayori.chr", "wb").write(renpy.file("sayori.chr").read())
+                restore_character("sayori")
 
     if not persistent.special_poems:
         python hide:
             persistent.special_poems = [0,0,0]
-            a = range(1,12)
+            a = list(range(1,12))
             for i in range(3):
                 b = renpy.random.choice(a)
                 persistent.special_poems[i] = b

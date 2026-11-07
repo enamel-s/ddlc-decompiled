@@ -296,6 +296,7 @@ label ch21_end:
         play sound "sfx/s_kill_glitch1.ogg"
         $ pause(0.25)
         hide screen tear
+        $ srf = None
         stop sound
         $ menu_clicked += 1
         if menu_clicked < 9:

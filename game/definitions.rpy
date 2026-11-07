@@ -1,14 +1,56 @@
-define persistent.demo = False
-define persistent.steam = ("steamapps" in config.basedir.lower())
+default persistent.demo = False
 define config.developer = False
 
-python early:
-    import singleton
-    me = singleton.SingleInstance()
+init -10 python:
+    import os
+
+    # Ren'Py 8 no longer allows "../" in loader paths, so files outside the
+    # game directory (the characters folder, the files dropped next to the
+    # executable) are checked and written with the regular os module.
+
+    def basedir_path(*parts):
+        return os.path.join(config.basedir, *parts)
+
+    def character_path(name):
+        return basedir_path("characters", name + ".chr")
+
+    def character_exists(name):
+        return os.path.isfile(character_path(name))
+
+    def basedir_file_exists(filename):
+        return os.path.isfile(basedir_path(filename))
+
+    def write_game_file(source, destination):
+        """
+        Copies the game file `source` (loaded through Ren'Py, so it works
+        from inside an archive) to the absolute path `destination`.
+        """
+        try:
+            folder = os.path.dirname(destination)
+            if folder and not os.path.isdir(folder):
+                os.makedirs(folder)
+            with renpy.open_file(source) as src:
+                data = src.read()
+            with open(destination, "wb") as dst:
+                dst.write(data)
+        except Exception:
+            pass
+
+    def copy_to_basedir(filename):
+        if not basedir_file_exists(filename):
+            write_game_file(filename, basedir_path(filename))
+
+    def restore_character(name):
+        if not character_exists(name):
+            write_game_file(name + ".chr", character_path(name))
 
 init python:
-    config.keymap['game_menu'].remove('mouseup_3')
-    config.keymap['hide_windows'].append('mouseup_3')
+    persistent.steam = ("steamapps" in config.basedir.lower())
+
+    if 'mouseup_3' in config.keymap['game_menu']:
+        config.keymap['game_menu'].remove('mouseup_3')
+    if 'mouseup_3' not in config.keymap['hide_windows']:
+        config.keymap['hide_windows'].append('mouseup_3')
     config.keymap['self_voicing'] = []
     config.keymap['clipboard_voicing'] = []
     config.keymap['toggle_skip'] = []
@@ -21,18 +63,11 @@ init python:
         for savegame in renpy.list_saved_games(fast=True):
             renpy.unlink_save(savegame)
     def delete_character(name):
-        import os
-        try: os.remove(config.basedir + "/characters/" + name + ".chr")
-        except: pass
+        try: os.remove(character_path(name))
+        except Exception: pass
     def restore_all_characters():
-        try: renpy.file("../characters/monika.chr")
-        except: open(config.basedir + "/characters/monika.chr", "wb").write(renpy.file("monika.chr").read())
-        try: renpy.file("../characters/natsuki.chr")
-        except: open(config.basedir + "/characters/natsuki.chr", "wb").write(renpy.file("natsuki.chr").read())
-        try: renpy.file("../characters/yuri.chr")
-        except: open(config.basedir + "/characters/yuri.chr", "wb").write(renpy.file("yuri.chr").read())
-        try: renpy.file("../characters/sayori.chr")
-        except: open(config.basedir + "/characters/sayori.chr", "wb").write(renpy.file("sayori.chr").read())
+        for name in ("monika", "natsuki", "yuri", "sayori"):
+            restore_character(name)
     def restore_relevant_characters():
         restore_all_characters()
         if persistent.playthrough == 1 or persistent.playthrough == 2:
@@ -1323,7 +1358,27 @@ default persistent.monika_back = None
 default in_sayori_kill = None
 default in_yuri_kill = None
 default anticheat = 0
-define config.mouse = None
+# Ren'Py 8 only reads config.mouse when the game starts, so the animated
+# Sayori cursor used in chapter 2 is registered here and switched on and
+# off with default_mouse.
+define config.mouse = {"sayori_head": [
+    ("gui/mouse/s_head2.png", 0, 0),
+    ("gui/mouse/s_head2.png", 0, 0),
+    ("gui/mouse/s_head2.png", 0, 0),
+    ("gui/mouse/s_head2.png", 0, 0),
+    ("gui/mouse/s_head.png", 0, 0),
+    ("gui/mouse/s_head.png", 0, 0),
+    ("gui/mouse/s_head2.png", 0, 0),
+    ("gui/mouse/s_head2.png", 0, 0),
+    ("gui/mouse/s_head2.png", 0, 0),
+    ("gui/mouse/s_head2.png", 0, 0),
+    ("gui/mouse/s_head2.png", 0, 0),
+    ("gui/mouse/s_head2.png", 0, 0),
+    ("gui/mouse/s_head2.png", 0, 0),
+    ("gui/mouse/s_head2.png", 0, 0),
+    ("gui/mouse/s_head.png", 0, 0)
+    ]}
+default default_mouse = "default"
 default allow_skipping = True
 default basedir = config.basedir
 default chapter = 0

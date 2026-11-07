@@ -161,13 +161,37 @@ define config.rollback_enabled = config.developer
 define config.menu_clear_layers = ["front"]
 define config.gl_test_image = "white"
 
+## Compatibility ###############################################################
+##
+## DDLC was made with Ren'Py 6.99.12. These settings keep the behaviours the
+## scripts were written against, where newer versions of Ren'Py changed them.
+
+## Layer transforms ("show layer master at ...") start fresh instead of
+## inheriting the state of the previous layer transform. Many of the glitch
+## and heartbeat effects depend on this.
+define config.keep_show_layer_state = False
+
+## The textbox is only hidden automatically by scene and call screen, so it
+## stays up behind choice menus the way it did in the original game.
+define config.window_auto_show = [ "say" ]
+define config.window_auto_hide = [ "scene", "call screen" ]
+define config.menu_showed_window = True
+
 
 init python:
-    if len(renpy.loadsave.location.locations) > 1: del(renpy.loadsave.location.locations[1])
+    ## Only keep the per-user save location (not game/saves), like the
+    ## original game. Ren'Py 8 rebuilds the save locations after init, so
+    ## this runs as a start callback instead of directly in init.
+    def keep_user_save_location_only():
+        locations = getattr(renpy.loadsave.location, "locations", None)
+        if locations is not None and len(locations) > 1:
+            del locations[1]
+
+    config.start_callbacks.append(keep_user_save_location_only)
     renpy.game.preferences.pad_enabled = False
     def replace_text(s):
-        s = s.replace('--', u'\u2014') 
-        s = s.replace(' - ', u'\u2014') 
+        s = s.replace('--', '\u2014')
+        s = s.replace(' - ', '\u2014')
         return s
     config.replace_text = replace_text
 
