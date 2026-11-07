@@ -14,3 +14,6 @@ characters/
 /CAN YOU HEAR ME.txt
 /iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii.txt
 /have a nice weekend!
+# Python bytecode cache.
+__pycache__/
+*.pyc
