@@ -16,9 +16,23 @@ Keep the APK to yourself: it contains the whole game.
 | File | What it does |
 |---|---|
 | `00personal_android_fixes.rpy` | Stops two crashes in a stock Ren'Py Android build: the `singleton` lock (no temp folder on Android) and the official app's custom Java music service, which the base game also calls when it starts from the desktop and when you change the music volume. |
-| `burmese_language.rpy` | Adds "Burmese" to the desktop Settings app's language list, and switches every font the Japanese translation switches to your Myanmar font. |
+| `fix_poemgame.py` | Fixes a Python 3 error the decompiler left in `script-poemgame.rpy`. The game only starts today because the repo ships compiled bytecode; as soon as Ren'Py recompiles that file, it won't start. Run this first, whichever route you take. |
+| `burmese_language.rpy` | Route A: adds "Burmese" to the desktop Settings app's language list, and switches every font the Japanese translation switches to your Myanmar font. |
+| `burmese_fonts_in_place.rpy` | Route B: the same fonts, applied to the default language, for when the Burmese is written over the English. |
 
-## Steps
+## Two ways to translate
+
+- **Route A, translation files (`--tl`):** the Burmese goes into
+  `game/tl/burmese/`, the English scripts stay untouched, and you pick
+  Burmese in Settings. Needs the launcher's "Generate Translations" step.
+- **Route B, in place (like your PC version):** the Burmese is written
+  straight over the English in the `.rpy` scripts, and the game always shows
+  it. No generating step, and you can see and edit the result directly in the
+  scripts.
+
+Use one or the other, not both.
+
+## Route B: in place (like the PC version)
 
 You need the Ren'Py 8.5 SDK on your PC.
 
@@ -28,7 +42,52 @@ You need the Ren'Py 8.5 SDK on your PC.
    git clone https://github.com/HiroStuff/DDLC-Plus-Mobile
    ```
 
-2. Copy both `.rpy` files from this folder into its `game/` folder.
+2. Fix the poem game:
+
+   ```bash
+   python3 plus-mobile/fix_poemgame.py path/to/DDLC-Plus-Mobile/game
+   ```
+
+3. Copy `00personal_android_fixes.rpy` and `burmese_fonts_in_place.rpy` into
+   its `game/` folder, and put your font in `game/fonts/` as
+   `Zawgyi-One.ttf` (or change `burmese_font` in that file).
+
+4. Write your sheet over the English. Try it with `--dry-run` first:
+
+   ```bash
+   python3 tools/ddlc_xlsx.py apply script.xlsx --game path/to/DDLC-Plus-Mobile/game --dry-run
+   python3 tools/ddlc_xlsx.py apply script.xlsx --game path/to/DDLC-Plus-Mobile/game
+   ```
+
+   This edits the scripts directly, the same as on PC. Commit or copy the
+   `game/` folder first, so you can go back. Running it again with an updated
+   sheet is safe: lines already translated no longer match their English and
+   are left alone, and new rows get filled in. (To change a line that's
+   already translated, edit it in the `.rpy` file, or restore the file and
+   apply again.)
+
+   To start a fresh sheet from the mobile scripts instead of your PC one:
+
+   ```bash
+   python3 tools/ddlc_xlsx.py extract path/to/DDLC-Plus-Mobile/game/script-ch0.rpy -o script-ch0.xlsx
+   ```
+
+5. Do steps 6 to 7 of route A (package name, build). Keep Settings on
+   English: that's the language your Burmese is written into.
+
+## Route A: translation files
+
+You need the Ren'Py 8.5 SDK on your PC.
+
+1. Clone the repo:
+
+   ```bash
+   git clone https://github.com/HiroStuff/DDLC-Plus-Mobile
+   ```
+
+2. Run `fix_poemgame.py` (see route B, step 2), then copy
+   `00personal_android_fixes.rpy` and `burmese_language.rpy` from this
+   folder into its `game/` folder.
 
 3. Put your Myanmar font in `game/fonts/` as `Zawgyi-One.ttf`. If your font
    has a different name, change `burmese_font` at the top of

@@ -156,7 +156,7 @@ def project_names(game_dir):
 CODE_RE = re.compile(r"""
     ^\#[0-9a-fA-F]{3,8}$                       # colour
   | ^<.*>                                      # audio spec, <loop 1.0>bgm/1.ogg
-  | \.(?:rpy|rpyc|chr|png|jpe?g|webp|ogg|mp3|wav|opus|ttf|otf|txt|html)$
+  | ^[^?!\\]*\.(?:rpy|rpyc|chr|png|jpe?g|webp|ogg|mp3|wav|opus|ttf|otf|txt|html)$   # file names
   | ^[\w.\-]*/[\w./\-]*$                       # paths, gui/foo
   | ^\w*_\w*$                                  # identifiers, ch0_kill
   | ^\w+(?:\.\w+)+$                            # dotted names, renpy.music
