@@ -21,6 +21,15 @@ Usage:
     python3 tools/ddlc_xlsx.py apply script.xlsx --game game
     python3 tools/ddlc_xlsx.py apply script.xlsx --game game --out translated/game
 
+Translation files: instead of writing over the English in the scripts, the
+translations can go into Ren'Py's own translation folder. Generate it once in
+the Ren'Py launcher ("Generate Translations", language e.g. "burmese"), then:
+
+    python3 tools/ddlc_xlsx.py apply script.xlsx --game game/tl/burmese --tl
+
+Each sheet fills the file with the same name in that folder. The English
+scripts stay untouched, and the language is picked in the game's settings.
+
 When applying, the text used for each row is the first non-empty cell of
 Edit, TLC, TL (so a checked or edited line wins over the first draft).
 
@@ -289,6 +298,14 @@ def apply(args):
             rows.append((i, original, tl))
 
         literals = find_literals(text)
+
+        if args.tl:
+            # In Ren'Py translation files, "old" lines hold the English that
+            # Ren'Py looks up, so only the "new" lines and the uncommented
+            # dialogue lines are filled in.
+            lines = text.split("\n")
+            literals = [ l for l in literals if not lines[l.line - 1].lstrip().startswith("old ") ]
+
         contents = [text[l.start:l.end] for l in literals]
 
         matcher = difflib.SequenceMatcher(None, contents, [r[1] for r in rows], autojunk=False)
@@ -361,6 +378,7 @@ def main():
     a.add_argument("sheet", help="the translated .xlsx file")
     a.add_argument("--game", default="game", help="folder with the .rpy files (default: game)")
     a.add_argument("--out", help="write translated scripts to this folder instead of in place")
+    a.add_argument("--tl", action="store_true", help="--game is a Ren'Py translation folder (game/tl/LANGUAGE); fill it instead of the scripts")
     a.add_argument("--force", action="store_true", help="also replace strings that look like code")
     a.add_argument("--dry-run", action="store_true", help="report what would change without writing")
     a.set_defaults(func=apply)
