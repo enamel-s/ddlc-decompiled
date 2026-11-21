@@ -16,6 +16,7 @@ Keep the APK to yourself: it contains the whole game.
 | File | What it does |
 |---|---|
 | `00personal_android_fixes.rpy` | Stops two crashes in a stock Ren'Py Android build: the `singleton` lock (no temp folder on Android) and the official app's custom Java music service, which the base game also calls when it starts from the desktop and when you change the music volume. |
+| `00personal_pc_fixes.rpy` | For a Windows/PC build: makes the PC file checks (`renpy.file("../characters/monika.chr")` and the files next to the game) work on Ren'Py 8 again. Without it, a new game jumps straight to the Act 1 ending and Monika's room ends at once. Does nothing on Android. |
 | `fix_poemgame.py` | Fixes a Python 3 error the decompiler left in `script-poemgame.rpy`. The game only starts today because the repo ships compiled bytecode; as soon as Ren'Py recompiles that file, it won't start. Run this first, whichever route you take. |
 | `burmese_language.rpy` | Route A: adds "Burmese" to the desktop Settings app's language list, and switches every font the Japanese translation switches to your Myanmar font. |
 | `burmese_fonts_in_place.rpy` | Route B: the same fonts, applied to the default language, for when the Burmese is written over the English. |
@@ -131,3 +132,25 @@ You need the Ren'Py 8.5 SDK on your PC.
 - Untested here: I couldn't build or run Android in this environment. If it
   crashes, the error is in `traceback.txt`, which the Android build shows on
   screen.
+
+## Windows (PC) build
+
+The same project builds for Windows. On PC the game uses real files again:
+the `characters/` folder next to `game/`, and the files it drops beside the
+game, like the original DDLC.
+
+1. Do route A or B as above, but also copy `00personal_pc_fixes.rpy` into
+   `game/`. (It can stay in for the Android build too.)
+2. To just play on your PC, click **Launch Project** in the launcher.
+3. To make a Windows copy you can move to another PC, click **Build
+   Distributions**, tick **Windows**, and build. The result is a `.zip` in
+   the folder next to your projects directory; unzip it and run
+   `DDLC.exe`.
+
+Notes:
+
+- The repo's own code treats the Plus content as owned on PC, the way the
+  Steam version works, so the side stories, gallery and other desktop apps
+  open there instead of showing the purchase screen.
+- The stream check uses `wmic`, which newer Windows 11 versions don't have.
+  It fails quietly, so the game just doesn't notice streaming software.
